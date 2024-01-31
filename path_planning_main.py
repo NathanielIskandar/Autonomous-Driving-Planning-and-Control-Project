@@ -51,8 +51,7 @@ def main():
                     print("             ")
                     print("             ")
                     print("             ")
-                    planner_path = planner(blue_cones, yellow_cones)
-
+                    planner_path = planner(blue_cones, yellow_cones, screen, POINT_RADIUS, SCREEN_WIDTH, SCREEN_HEIGHT)
                     
         screen.fill(BACKGROUND_COLOR)
         # racetrack.draw_midpoints()
