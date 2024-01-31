@@ -7,6 +7,14 @@ class Node:
         self.parent = None
         self.cost = 0.0
         self.children = []
+
+class Obstacle(object):
+    def __init__(self, coordinates_list):
+        self.coordinates_list = coordinates_list
+    
+    def check_intersect(nearest_node, projected_point):
+        return 
+
         
 class RRTStar(object):
     def __init__(self, screen, start, goal, blue_cones, yellow_cones, POINT_RADIUS, neighbor_radius, width, height, step_size=10, max_iter=50):
@@ -22,7 +30,8 @@ class RRTStar(object):
         self.step_size = step_size 
         self.max_iter = max_iter
         self.nodes = [self.start]
-        self.COLOR = (30, 225, 112)
+        self.COLOR = (100, 100, 100)
+        self.BACKGROUND_COLOR = (255, 255, 255)
         
     #HELPFUL GENERAL FUNCTIONS 
     #=============================================================================
@@ -80,19 +89,11 @@ class RRTStar(object):
         new_point = from_node.point + direction * step_size
         return new_point
 
-    # def steer(self, from_node, to_point, EPSILON):
-    #     if self.distance(from_node.point, to_point) < EPSILON:
-    #         # If the distance to the random node is less than EPSILON, just return the random node.
-    #         return to_point
-    #     else:
-    #         # Otherwise, take a step from the nearest node towards the random node.
-    #         theta = atan2(to_point[1] - from_node.point[1], to_point[0] - from_node.point[0])
-    #         new_point = (from_node.point[0] + EPSILON * cos(theta), from_node.point[1] + EPSILON * sin(theta))
-    #         return new_point
-
-    
-
     #COMMENTED OUT FOR NOW BECAUSE CROSSES_BOUNDARY IS FAULTY
+    # make obstacle class
+        #instantiate: pass in point of the cones
+        #method checkIntersect(). takes two points
+    #
     def crosses_boundary(self, from_node, to_point):
         for i in range(len(self.blue_cones) - 1):
             if self.line_intersect(from_node.point, to_point, self.blue_cones[i], self.blue_cones[i + 1]):
@@ -116,8 +117,15 @@ class RRTStar(object):
         # If the cost of the new node + distance from the curr node to that node is less than curr node's cost, replace
         #instead of distnace, it's the cost
         if  new_node.cost + self.distance(curr_node.point, new_node.point) < curr_node.cost:
+            print("Found a better parent")
             curr_node.cost = new_node.cost + self.distance(curr_node.point, new_node.point) #let node.cost be the cheaper one
+            current_parent = curr_node.parent
             curr_node.parent = new_node
+
+            #reasasign children
+            new_node.children.append(curr_node)
+            current_parent.children.remove(curr_node)
+
         return
     
     def draw_connection_to_parent(self, parent):
@@ -129,7 +137,6 @@ class RRTStar(object):
             pygame.draw.circle(self.screen, self.COLOR, child.point, self.POINT_RADIUS)
             #draw the line between them
             pygame.draw.line(self.screen, self.COLOR, parent.point, child.point, 2)
-            pygame.display.flip()
 
             self.draw_connection_to_parent(child)
         
@@ -159,7 +166,10 @@ class RRTStar(object):
 
             #If the projected point is valid, then create new node
             new_node = self.add_connect_new_node(nearest_node, projected_point)
+
+            self.screen.fill(self.BACKGROUND_COLOR) 
             self.draw_connection_to_parent(self.start)
+            pygame.display.flip()
 
             #if new_node is not None:  # Only draw if the new node was added
                 #pygame.draw.circle(self.screen, self.COLOR, tuple(new_node.point.astype(int)), self.POINT_RADIUS)
@@ -200,11 +210,10 @@ def planner(blue_cones, yellow_cones, screen, POINT_RADIUS, SCREEN_WIDTH, SCREEN
 	# as described in the docstring above
 
     start = np.array([int((blue_cones[0][0] + yellow_cones[0][0]) / 2), int((blue_cones[0][1] + yellow_cones[0][1]) / 2)])
-    goal = np.array([int((blue_cones[-2][0] + yellow_cones[-2][0]) / 2), int((blue_cones[-2][1] + yellow_cones[-2][1]) / 2)])
+    goal = np.array([int((blue_cones[-1][0] + yellow_cones[-1][0]) / 2), int((blue_cones[-1][1] + yellow_cones[-1][1]) / 2)])
 
     neighbor_radius = 500
 
-    #without Pygame
     rrt_star = RRTStar(screen, start, goal, blue_cones, yellow_cones, POINT_RADIUS, neighbor_radius, SCREEN_WIDTH, SCREEN_HEIGHT, step_size=30, max_iter=1000)
     
     
