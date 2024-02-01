@@ -38,31 +38,15 @@ class RRTStar(object):
         self.BACKGROUND_COLOR = (255, 255, 255)
         self.blue_cones_obstacle = Obstacle(blue_cones) #blue cones obstacle instantiantion
         self.yellow_cones_obstacle = Obstacle(yellow_cones) #yellow cones obstacle instantiation
-        self.x_stop = float((blue_cones[0][0] + yellow_cones[0][0]) / 2 - 0.5)
-        self.y_stop = float((blue_cones[0][1] + yellow_cones[0][1]) / 2 - 0.5)
-        self.start_coord = [self.x_stop, self.y_stop]
-        
-    
+        track_width = np.linalg.norm(np.array(blue_cones[0]) - np.array(yellow_cones[0]))
+        left_bound_point = np.array(blue_cones[0]) - np.array([0, track_width / 2])
+        right_bound_point = np.array(yellow_cones[0]) + np.array([0, track_width / 2])
+        self.start_line_bound = [left_bound_point.tolist(), right_bound_point.tolist()]
+        self.starting_line = Obstacle(self.start_line_bound)
     #HELPFUL GENERAL FUNCTIONS 
     #=============================================================================
     def distance(self, point1, point2):
         return np.linalg.norm(np.array(point1) - np.array(point2))
-    
-    #COMMENTED OUT FOR NOW BECAUSE LINE CROSSING LOGIC IS FAULTY [from outside resource reference]
-    #==============================================================================================
-    def ccw(self, A, B, C):
-        """Checks if the points A, B, and C are listed in a counterclockwise order."""
-        return (C[1] - A[1]) * (B[0] - A[0]) > (B[1] - A[1]) * (C[0] - A[0])
-
-    def intersect(self, p1, q1, p2, q2):
-        """Returns True if line segments 'p1q1' and 'p2q2' intersect."""
-        return (self.ccw(p1, p2, q2) != self.ccw(q1, p2, q2)) and (self.ccw(p1, q1, p2) != self.ccw(p1, q1, q2))
-
-    def line_intersect(self, p1, p2, p3, p4):
-        """Check if the line segment from p1 to p2 intersects with the line segment from p3 to p4."""
-        return self.intersect(p1, p2, p3, p4)
-    #=============================================================================
-
 
     #BEGIN RRT*-SPECIFIC FUNCTIONS
     #=============================================================================
@@ -103,7 +87,7 @@ class RRTStar(object):
         # Use self to access the obstacle instances
         if not self.blue_cones_obstacle.check_intersect(from_node.point, to_point) and \
            not self.yellow_cones_obstacle.check_intersect(from_node.point, to_point) and \
-           not self.yellow_cones_obstacle.check_intersect(from_node.point, to_point):
+           not self.starting_line.check_intersect(from_node.point, to_point):
             return False
         return True
 
@@ -143,13 +127,17 @@ class RRTStar(object):
 
             self.draw_connection_to_parent(child)
         
+    def add_to_path(self, parent, arr):
+        #draw the parent point
+        for child in parent.children:
+            arr.append(child.point)
+            self.add_to_path(child, arr)
 
     #=============================================================================
                 
     
     #GENERATE PATH
     def generate_path(self):
-        #np.array([int((blue_cones[0][0] + yellow_cones[0][0]) / 2), int((blue_cones[0][1] + yellow_cones[0][1]) / 2)])
         #draw line between
         for i in range(self.max_iter):
             print("iteration #:", i)
@@ -179,26 +167,30 @@ class RRTStar(object):
             for neighbor in neighbors:
                 self.select_parent(neighbor, new_node)
 
-            # Extract the path from the nodes
-            print("Length of Nodes.list = ", len(self.nodes))
-            print("         ")
+        # Extract the path from the nodes
+        print("Length of Nodes.list = ", len(self.nodes))
+        print("         ")
+
         path = []
-        current = self.goal
-        while current.parent is not None:
-            point = current.point
-            print(point)
-            path.append(point)
-            current = current.parent
-        path.append(self.start.point) 
+        # current = self.find_nearest_node(self.goal.point)
+        # while current.parent is not None:
+        #     point = current.point
+        #     print("point: ", point)
+        #     path.append(point)
+        #     current = current.parent
+        # path.append(self.start.point) 
+        # print("Length of path = ", len(path))
+        # return path[::-1]
 
 
+        self.add_to_path(self.start, path)
+        return path
 
         # for node in self.nodes:
         #     point = node.point
         #     print(point)
         #     path.append(point)
         # return path[::-1]
-        return path[::-1]
     
             
 
