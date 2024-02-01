@@ -1,4 +1,5 @@
 import numpy as np
+from shapely.geometry import LineString, Point
 import pygame
 
 class Node:
@@ -10,10 +11,11 @@ class Node:
 
 class Obstacle(object):
     def __init__(self, coordinates_list):
-        self.coordinates_list = coordinates_list
+        self.boundary = LineString(coordinates_list)
     
-    def check_intersect(nearest_node, projected_point):
-        return 
+    def check_intersect(self, from_point, to_point):
+        line = LineString([from_point, to_point])
+        return self.boundary.intersects(line)
 
         
 class RRTStar(object):
@@ -22,7 +24,9 @@ class RRTStar(object):
         self.start = Node(start)
         self.goal = Node(goal)
         self.blue_cones = blue_cones
+        self.blue_cones.append(blue_cones[0])
         self.yellow_cones = yellow_cones
+        self.yellow_cones.append(yellow_cones[0])
         self.POINT_RADIUS = POINT_RADIUS
         self.neighbor_radius = neighbor_radius
         self.width = width
@@ -32,7 +36,13 @@ class RRTStar(object):
         self.nodes = [self.start]
         self.COLOR = (100, 100, 100)
         self.BACKGROUND_COLOR = (255, 255, 255)
+        self.blue_cones_obstacle = Obstacle(blue_cones) #blue cones obstacle instantiantion
+        self.yellow_cones_obstacle = Obstacle(yellow_cones) #yellow cones obstacle instantiation
+        self.x_stop = float((blue_cones[0][0] + yellow_cones[0][0]) / 2 - 0.5)
+        self.y_stop = float((blue_cones[0][1] + yellow_cones[0][1]) / 2 - 0.5)
+        self.start_coord = [self.x_stop, self.y_stop]
         
+    
     #HELPFUL GENERAL FUNCTIONS 
     #=============================================================================
     def distance(self, point1, point2):
@@ -89,19 +99,13 @@ class RRTStar(object):
         new_point = from_node.point + direction * step_size
         return new_point
 
-    #COMMENTED OUT FOR NOW BECAUSE CROSSES_BOUNDARY IS FAULTY
-    # make obstacle class
-        #instantiate: pass in point of the cones
-        #method checkIntersect(). takes two points
-    #
     def crosses_boundary(self, from_node, to_point):
-        for i in range(len(self.blue_cones) - 1):
-            if self.line_intersect(from_node.point, to_point, self.blue_cones[i], self.blue_cones[i + 1]):
-                return True
-        for i in range(len(self.yellow_cones) - 1):
-            if self.line_intersect(from_node.point, to_point, self.yellow_cones[i], self.yellow_cones[i + 1]):
-                return True
-        return False
+        # Use self to access the obstacle instances
+        if not self.blue_cones_obstacle.check_intersect(from_node.point, to_point) and \
+           not self.yellow_cones_obstacle.check_intersect(from_node.point, to_point) and \
+           not self.yellow_cones_obstacle.check_intersect(from_node.point, to_point):
+            return False
+        return True
 
 
     def find_neighbors(self, new_node, neighbor_radius):
@@ -116,7 +120,7 @@ class RRTStar(object):
     def select_parent(self, curr_node, new_node):
         # If the cost of the new node + distance from the curr node to that node is less than curr node's cost, replace
         #instead of distnace, it's the cost
-        if  new_node.cost + self.distance(curr_node.point, new_node.point) < curr_node.cost:
+        if  new_node.cost + self.distance(curr_node.point, new_node.point) < curr_node.cost and not self.crosses_boundary(curr_node, new_node.point):
             print("Found a better parent")
             curr_node.cost = new_node.cost + self.distance(curr_node.point, new_node.point) #let node.cost be the cheaper one
             current_parent = curr_node.parent
@@ -125,7 +129,6 @@ class RRTStar(object):
             #reasasign children
             new_node.children.append(curr_node)
             current_parent.children.remove(curr_node)
-
         return
     
     def draw_connection_to_parent(self, parent):
@@ -141,18 +144,13 @@ class RRTStar(object):
             self.draw_connection_to_parent(child)
         
 
-        
-
-
-
-            
-
     #=============================================================================
                 
     
-
     #GENERATE PATH
     def generate_path(self):
+        #np.array([int((blue_cones[0][0] + yellow_cones[0][0]) / 2), int((blue_cones[0][1] + yellow_cones[0][1]) / 2)])
+        #draw line between
         for i in range(self.max_iter):
             print("iteration #:", i)
             sampled_point = self.sample_point() #Sampe a random point
@@ -161,8 +159,8 @@ class RRTStar(object):
             if projected_point is None:
                 continue
             # #Check if our projected node is valid  // COMMENTED OUT FOR NOW BECAUSE CROSSES BOUNDARY IS FAULTY
-            # if self.crosses_boundary(nearest_node, projected_point): # If boundary is crossed, try again
-            #     continue #skip everything and regenerate a point
+            if self.crosses_boundary(nearest_node, projected_point): # If boundary is crossed, try again
+                continue #skip everything and regenerate a point
 
             #If the projected point is valid, then create new node
             new_node = self.add_connect_new_node(nearest_node, projected_point)
@@ -185,12 +183,23 @@ class RRTStar(object):
             print("Length of Nodes.list = ", len(self.nodes))
             print("         ")
         path = []
-        for node in self.nodes:
-            point = node.point
+        current = self.goal
+        while current.parent is not None:
+            point = current.point
             print(point)
             path.append(point)
-        return path[::-1]
+            current = current.parent
+        path.append(self.start.point) 
 
+
+
+        # for node in self.nodes:
+        #     point = node.point
+        #     print(point)
+        #     path.append(point)
+        # return path[::-1]
+        return path[::-1]
+    
             
 
                 
@@ -214,8 +223,8 @@ def planner(blue_cones, yellow_cones, screen, POINT_RADIUS, SCREEN_WIDTH, SCREEN
 
     neighbor_radius = 500
 
-    rrt_star = RRTStar(screen, start, goal, blue_cones, yellow_cones, POINT_RADIUS, neighbor_radius, SCREEN_WIDTH, SCREEN_HEIGHT, step_size=30, max_iter=1000)
-    
+    # Generate an instance of RRTStar
+    rrt_star = RRTStar(screen, start, goal, blue_cones, yellow_cones, POINT_RADIUS, neighbor_radius, SCREEN_WIDTH, SCREEN_HEIGHT, step_size=30, max_iter=1500)
     
     ret = rrt_star.generate_path()
     print("         ")
