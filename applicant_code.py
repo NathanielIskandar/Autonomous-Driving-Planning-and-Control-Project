@@ -20,11 +20,8 @@ class Obstacle(object):
         
 class RRTStar(object):
     def __init__(self, racetrack, screen, start, goal, blue_cones, yellow_cones, POINT_RADIUS, width, height, neighbor_radius, radius_from_goal = 20,step_size=10, max_iter=50):
-        #canvas
         self.racetrack = racetrack
         self.screen = screen
-
-        #nodes
         self.start = Node(start)
         self.goal = Node(goal)
         self.blue_cones = blue_cones
@@ -43,13 +40,11 @@ class RRTStar(object):
         self.BACKGROUND_COLOR = (255, 255, 255)
         self.blue_cones_obstacle = Obstacle(blue_cones) #blue cones obstacle instantiantion
         self.yellow_cones_obstacle = Obstacle(yellow_cones) #yellow cones obstacle instantiation
-        # self.bound_left = np.array( [(blue_cones[-2][0] + blue_cones[-3][0]) / 2, (blue_cones[-2][1] + blue_cones[-3][1]) / 2])
-        # self.bound_right = np.array( [(yellow_cones[-2][0] + yellow_cones[-3][0]) / 2, (yellow_cones[-2][1] + yellow_cones[-3][1])/2])
+        self.absolute_line_left_point = np.array( [blue_cones[-2][0], blue_cones[-2][1]] ) #blue_cones[-2] represent the point where the goal node is
+        self.absolute_line_right_point = np.array( [yellow_cones[-2][0], yellow_cones[-2][1]] )
+        self.start_absolute_line_bound = [self.absolute_line_left_point, self.absolute_line_right_point]
+        self.starting_line = Obstacle(self.start_absolute_line_bound)
 
-        self.bound_left = np.array( [blue_cones[-2][0], blue_cones[-2][1]] )
-        self.bound_right = np.array( [yellow_cones[-2][0], yellow_cones[-2][1]] )
-        self.start_line_bound = [self.bound_left, self.bound_right]
-        self.starting_line = Obstacle(self.start_line_bound)
 
     #HELPFUL GENERAL FUNCTIONS 
     #=============================================================================
@@ -59,14 +54,11 @@ class RRTStar(object):
     #BEGIN RRT*-SPECIFIC FUNCTIONS
     #=============================================================================
     def add_connect_new_node(self, nearest_node, point):
-        #ADJACENCY LIST!
-        #Defining a new node
         new_node = Node(point)
         new_node.parent = nearest_node
         new_node.cost = nearest_node.cost + self.distance(point, nearest_node.point)
         nearest_node.children.append(new_node)
-
-        self.nodes.append(new_node) #apprend to the list of nodes
+        self.nodes.append(new_node)
         return new_node
 
     def sample_point(self):
@@ -134,21 +126,18 @@ class RRTStar(object):
             pygame.draw.line(self.screen, self.COLOR, parent.point, child.point, 2)
 
             self.draw_connection_to_parent(child)
-        
-    def add_to_path(self, parent, arr):
-        #draw the parent point
-        for child in parent.children:
-            arr.append(child.point)
-            self.add_to_path(child, arr)
 
-    
-    #=============================================================================
-                
+    def found_node_within_goal_radius(self):
+        nearest_node_to_goal = self.find_nearest_node(self.goal.point)
+        pygame.draw.circle(self.screen, (0,0,200), tuple(nearest_node_to_goal.point.astype(int)), self.POINT_RADIUS)
+        if self.distance(nearest_node_to_goal.point, self.goal.point) <= self.radius_from_goal:
+            return True
+        return False  
     
     #GENERATE PATH
     def generate_path(self):
         #draw line between
-        for i in range(self.max_iter):
+        while not self.found_node_within_goal_radius():
             self.screen.fill(self.BACKGROUND_COLOR) #set the screen canvas color to white
             sampled_point = self.sample_point() #Sampe a random point
             nearest_node = self.find_nearest_node(sampled_point) #FInd the nearest node to this random point
@@ -163,9 +152,9 @@ class RRTStar(object):
             new_node = self.add_connect_new_node(nearest_node, projected_point)
 
             
-            pygame.draw.circle(self.screen,  (255, 0, 255), tuple([self.bound_left[0], self.bound_left[1]]), self.POINT_RADIUS)
-            pygame.draw.circle(self.screen,  (255, 0, 255), tuple([self.bound_right[0], self.bound_right[1]]), self.POINT_RADIUS)
-            pygame.draw.line(self.screen,  (255, 0, 255), self.bound_left, self.bound_right, 2)
+            pygame.draw.circle(self.screen,  (255, 0, 255), tuple([self.absolute_line_left_point[0], self.absolute_line_left_point[1]]), self.POINT_RADIUS)
+            pygame.draw.circle(self.screen,  (255, 0, 255), tuple([self.absolute_line_right_point[0], self.absolute_line_right_point[1]]), self.POINT_RADIUS)
+            pygame.draw.line(self.screen,  (255, 0, 255), self.absolute_line_left_point, self.absolute_line_right_point, 2)
 
             pygame.draw.circle(self.screen, (0,0,200), tuple(self.goal.point.astype(int)), self.POINT_RADIUS) #draw the goal point
             self.racetrack.draw_yellow_cones() #draw the yellow track
@@ -187,7 +176,7 @@ class RRTStar(object):
 
         path = []
         current = self.find_nearest_node(self.goal.point)
-        while current.parent is not None:
+        while current.parent is not self.start:
             point = current.point
             print("point: ", point)
             path.append(point)
@@ -195,21 +184,8 @@ class RRTStar(object):
         path.append(self.start.point) 
         print("Length of path = ", len(path))
         return path[::-1]
-
-
-        # self.add_to_path(self.start, path)
-        # return path
-
-        # for node in self.nodes:
-        #     point = node.point
-        #     print(point)
-        #     path.append(point)
-        # return path[::-1]
     
-            
-
-                
-#def planner(blue_cones, yellow_cones, screen, SCREEN_WIDTH, SCREEN_HEIGHT):
+        
 def planner(racetrack, blue_cones, yellow_cones, screen, POINT_RADIUS, SCREEN_WIDTH, SCREEN_HEIGHT):
     """plans a path through the track given the blue and yellow cones.
 
@@ -220,19 +196,16 @@ def planner(racetrack, blue_cones, yellow_cones, screen, POINT_RADIUS, SCREEN_WI
 	Returns:
 		list: output path, with shape (n, 2)
 	"""
-    ###### YOUR CODE HERE ######
-	# fill out this function to make it work
-	# as described in the docstring above
 
     start = np.array([int((blue_cones[0][0] + yellow_cones[0][0]) / 2), int((blue_cones[0][1] + yellow_cones[0][1]) / 2)])
     goal = np.array([int((blue_cones[-2][0] + yellow_cones[-2][0]) / 2), int((blue_cones[-2][1] + yellow_cones[-2][1]) / 2)])
 
     # Generate an instance of RRTStar
-    rrt_star = RRTStar(racetrack, screen, start, goal, blue_cones, yellow_cones, POINT_RADIUS, SCREEN_WIDTH, SCREEN_HEIGHT, neighbor_radius = 500, step_size=30, max_iter=3000)
+    rrt_star = RRTStar(racetrack, screen, start, goal, blue_cones, yellow_cones, POINT_RADIUS, SCREEN_WIDTH, SCREEN_HEIGHT, neighbor_radius = 1000, step_size=30, max_iter=3000)
     
     ret = rrt_star.generate_path()
     print("         ")
-    print("Generated RRT points: ")
+    print("Generated RRT STAR points: ")
     print(ret)
 
     return ret
