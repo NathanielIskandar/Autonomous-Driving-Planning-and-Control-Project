@@ -52,10 +52,8 @@ class RRT(object):
         self.absolute_line_right_point = np.array( [yellow_cones[-2][0], yellow_cones[-2][1]] )
         self.start_absolute_line_bound = [self.absolute_line_left_point, self.absolute_line_right_point]
         self.starting_line = Obstacle(self.start_absolute_line_bound)
-
-        
-
-
+        self.absolute_start_midpoint = np.array([int((self.absolute_line_left_point[0] + self.absolute_line_right_point[0]) / 2),
+                     int((self.absolute_line_left_point[1] + self.absolute_line_right_point[1]) / 2)])
 
     # Utility function to calculate Euclidean distance between two points
     def distance(self, point1, point2):
@@ -167,6 +165,7 @@ class RRT(object):
             path.append(current.point)
             current = current.parent
         path.append(self.start_node.point)
+        path.append(self.absolute_start_midpoint)
 
         # Reverse the path to start from the start node and end at the goal node.
         return path[::-1]
@@ -196,7 +195,7 @@ class RRT(object):
         return self.backtrack_path_from_goal()
     
     
-
+#===============================================================================================================
 
         
 def rrt_planner(racetrack, blue_cones, yellow_cones, screen, POINT_RADIUS, SCREEN_WIDTH, SCREEN_HEIGHT):
