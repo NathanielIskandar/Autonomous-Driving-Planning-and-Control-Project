@@ -6,12 +6,30 @@ This project focuses on developing a path planning and control system for autono
 <br>
 
 ## Visualization: RRT vs RRT*
-
 ### RRT
+Course 1:
+
 https://github.com/NathanielIskandar/Autonomous-Driving-Planning-and-Control-Project/assets/76016696/3602673b-1d3f-425c-8f59-ade0339f9558
 
+Course 2:
+
+https://github.com/NathanielIskandar/Autonomous-Driving-Planning-and-Control-Project/assets/76016696/c065200b-8a27-445d-b07e-ee4f8b7e8172
+
+
+
 ### RRT*
-https://github.com/NathanielIskandar/Autonomous-Driving-Planning-and-Control-Project/assets/76016696/3df0599c-7a8b-4fac-b059-f4fe7cffbb7a
+Note: Notice how RRT* performs path compression!
+
+Course 1:
+
+https://github.com/NathanielIskandar/Autonomous-Driving-Planning-and-Control-Project/assets/76016696/588a698a-fe39-48b6-99cc-c629136eb9b5
+
+
+
+Course 2:
+
+https://github.com/NathanielIskandar/Autonomous-Driving-Planning-and-Control-Project/assets/76016696/a4be40c9-3052-4728-a7be-8d82ef98ca01
+
 
 
 <br>
