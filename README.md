@@ -30,6 +30,7 @@ Course 2:
 
 https://github.com/NathanielIskandar/Autonomous-Driving-Planning-and-Control-Project/assets/76016696/a4be40c9-3052-4728-a7be-8d82ef98ca01
 
+For more videos, check out the following [Google Drive Link](https://drive.google.com/drive/folders/1f4mVHUy-8IKJi7Qxet3e6x41tSt3d4xa?usp=drive_link).
 
 
 <br>
