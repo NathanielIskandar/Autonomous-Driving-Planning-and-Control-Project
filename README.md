@@ -67,10 +67,10 @@ Algorithm: Similar to RRT, RRT* begins with a tree rooted at the start position.
 
 
 ## Technologies
-Python 3.x
-Pygame for simulation visualization
-Numpy for numerical calculations
-Shapely for geometric operations
+1. Python 3.x
+2. Pygame for simulation visualization
+3. Numpy for numerical calculations
+4. Shapely for geometric operations
 
 <br>
 
@@ -93,7 +93,7 @@ To generate a new course and visualize the path planning process using  the **RR
 1. Press the number one (1)
 2. Press the space bar
 
-To generate a new course and visualize the path planning process using  the **RRT* algorithm**:
+To generate a new course and visualize the path planning process using  the **RRT\* algorithm**:
 1. Press the number two (2)
 2. Press the space bar
 
@@ -102,4 +102,4 @@ To generate a new course and visualize the path planning process using  the **RR
 
 
 ## Future Directions
-Moving forward, the project aims to delve deeper into optimization algorithms, specifically leveraging cvxpy as taught in EECS127. This direction involves a more profound understanding of mathematical optimization problems and integrating these concepts to enhance the autonomous driving system's efficiency and adaptability.
+Moving forward, the project aims to delve deeper into optimization algorithms, specifically leveraging the `cvxpy` library to perform complex computational math for optimization techniques as taught in EECS127. This direction involves a more profound understanding of mathematical optimization problems and integrating these concepts to enhance the autonomous driving system's efficiency and adaptability.
