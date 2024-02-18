@@ -3,8 +3,19 @@
 ## Overview
 This project focuses on developing a path planning and control system for autonomous driving within a simulated racing environment. Utilizing algorithms such as **Rapidly-exploring Random Trees (RRT)** and its optimized version, **RRT***, the project aims to navigate a vehicle through complex tracks with efficiency and precision. The motivation behind choosing these algorithms is their effectiveness in exploring uncharted spaces quickly and optimizing paths in environments with unpredictable obstacles, making them ideal for the dynamic conditions of a race track.
 
+<br>
+
+## Visualization: RRT vs RRT*
+
+### RRT
+https://github.com/NathanielIskandar/Autonomous-Driving-Planning-and-Control-Project/assets/76016696/3602673b-1d3f-425c-8f59-ade0339f9558
+
+### RRT*
+HERE
+
 
 <br>
+
 
 ## A Closer Look Into The Algorithms
 ### Rapidly-exploring Random Trees (RRT)
