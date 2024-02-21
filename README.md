@@ -1,4 +1,4 @@
-# Autonomous Driving Planning and Control Project
+# Formula Electric At Berkeley - Autonomous Driving R&D Team: Planning and Control Project
 
 ## Overview
 This project focuses on developing a path planning and control system for autonomous driving within a simulated racing environment. Utilizing algorithms such as **Rapidly-exploring Random Trees (RRT)** and its optimized version, **RRT***, the project aims to navigate a vehicle through complex tracks with efficiency and precision. The motivation behind choosing these algorithms is their effectiveness in exploring uncharted spaces quickly and optimizing paths in environments with unpredictable obstacles, making them ideal for the dynamic conditions of a race track.
